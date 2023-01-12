@@ -66,6 +66,11 @@
       <artifactId>google-cloud-assured-workloads-spring-starter</artifactId>
       <version>3.4.1-SNAPSHOT-preview</version>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-configuration-processor</artifactId>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
 
   <build>
@@ -75,6 +80,11 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
     </plugins>
+    <testResources>
+      <testResource>
+        <directory>${basedir}/src/test/resources</directory>
+      </testResource>
+  </testResources>
   </build>
 
 </project>

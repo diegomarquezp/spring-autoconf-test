@@ -10,7 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 @ContextConfiguration(classes = { OverridenLanguageSettingsConfig.class })
 public class CustomServiceSettingsOverrideTest extends BaseTest {
   @Test()
-  void testOverridenSettings() throws Exception {
+  void testOverridenSettings() {
     LanguageServiceClient bean = applicationContext.getBean(LanguageServiceClient.class);
     assertEquals("edgy-endpoint:1337", bean.getSettings().getEndpoint());
   }
