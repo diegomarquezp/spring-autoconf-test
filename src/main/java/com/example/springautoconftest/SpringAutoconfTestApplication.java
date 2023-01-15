@@ -1,21 +1,12 @@
 package com.example.springautoconftest;
 
+import com.google.api.gax.core.InstantiatingExecutorProvider;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.auth.oauth2.UserCredentials;
-import com.google.cloud.accessapproval.v1.AccessApprovalAdminClient;
-import com.google.cloud.accessapproval.v1.ApprovalRequest;
-import com.google.cloud.accessapproval.v1.ListApprovalRequestsMessage;
-import com.google.cloud.accessapproval.v1.ProjectName;
-import com.google.cloud.apigateway.v1.ApiGatewayServiceClient;
-import com.google.cloud.apigateway.v1.Gateway;
-import com.google.cloud.assuredworkloads.v1.AssuredWorkloadsServiceClient;
-import com.google.cloud.assuredworkloads.v1.ListWorkloadsRequest;
-import com.google.cloud.assuredworkloads.v1.Workload;
 import com.google.cloud.functions.v2.Function;
 import com.google.cloud.functions.v2.FunctionName;
 import com.google.cloud.functions.v2.FunctionServiceClient;
-import com.google.cloud.functions.v2.ListFunctionsRequest;
 import com.google.cloud.language.v1.Document;
 import com.google.cloud.language.v1.Document.Type;
 import com.google.cloud.language.v1.Entity;
@@ -37,23 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @RestController
-// @ConfigurationProperties("application.properties")
 public class SpringAutoconfTestApplication {
 
   @Autowired
   private LanguageServiceClient languageAutoClient;
 
   @Autowired
-  private AccessApprovalAdminClient accessApprovalAutoClient;
-
-  @Autowired
-  private ApiGatewayServiceClient apiGatewayAutoClient;
-
-  @Autowired
   private FunctionServiceClient functionsAutoClient;
-
-  @Autowired
-  private AssuredWorkloadsServiceClient assuredWorkloadsAutoClient;
 
   @Value( "${function-project}" )
   private String project;
@@ -79,71 +60,38 @@ public class SpringAutoconfTestApplication {
     return String.format("Hello %s!", name);
   }
 
-  @GetMapping("/functions")
-  public void syncListFunctions() throws Exception {
-    String quotaProjectId = this.functionsAutoClient.getSettings().getQuotaProjectId();
-    LOGGER.info("quotaProjectId set for Client library: " + quotaProjectId);
-    logCredentialId(this.functionsAutoClient.getSettings().getCredentialsProvider().getCredentials());
-    // in pantheon, enable service and create a function. then proceed
-    FunctionName name = FunctionName.of(project, "us-central1", functionName);
-    Function response = functionsAutoClient.getFunction(name);
-
-    LOGGER.info("Function name got: " + response.getName());
-    LOGGER.info("Function BuildConfig Runtime: " + response.getBuildConfig().getRuntime());
-  }
-
-  @GetMapping("/access-approval")
-  void withAccessApprovalConfigClient() throws IOException {
-    logCredentialId(this.accessApprovalAutoClient.getSettings().getCredentialsProvider().getCredentials());
-
-      ListApprovalRequestsMessage request =
-          ListApprovalRequestsMessage.newBuilder()
-              .setParent(ProjectName.of(project).toString())
-              //.setFilter("filter-1274492040")
-              //.setPageSize(883849137)
-              //.setPageToken("pageToken873572522")
-              .build();
-      int i = 0;
-      for (ApprovalRequest element :
-          accessApprovalAutoClient.listApprovalRequests(request).iterateAll()) {
-        LOGGER.info(element.toString());
-      }
-  }
-
-  @GetMapping("/api-gateway")
-  void withApiGatewayConfigClient() throws IOException {
-
-    logCredentialId(this.apiGatewayAutoClient.getSettings().getCredentialsProvider().getCredentials());
-      com.google.cloud.apigateway.v1.LocationName parent = com.google.cloud.apigateway.v1.LocationName.of(project, "us-central1");
-      for (Gateway element : apiGatewayAutoClient.listGateways(parent).iterateAll()) {
-        LOGGER.info(element);
-      }
-  }
-
-  @GetMapping("/assured-workload")
-  void withAssuredWorkloadsConfigClient() throws IOException {
-    logCredentialId(this.assuredWorkloadsAutoClient.getSettings().getCredentialsProvider().getCredentials());
-      ListWorkloadsRequest request =
-          ListWorkloadsRequest.newBuilder()
-              //.setParent(LocationName.of("[ORGANIZATION]", "[LOCATION]").toString())
-              //.setPageSize(883849137)
-              //.setPageToken("pageToken873572522")
-              //.setFilter("filter-1274492040")
-              .build();
-      for (Workload element : assuredWorkloadsAutoClient.listWorkloads(request).iterateAll()) {
-        System.out.println(element.toString());
-      }
-  }
-
-  /**
-   * Usage with autoconfig bean.
-   * should add settings and credentials to show difference from client library directly
-   */
   @GetMapping("/language")
   void language() throws IOException {
-    String quotaProjectId = this.languageAutoClient.getSettings().getQuotaProjectId();
-    LOGGER.info("quotaProjectId set for Client library: " + quotaProjectId);
+
+    // Credentials used
     logCredentialId(this.languageAutoClient.getSettings().getCredentialsProvider().getCredentials());
+
+    // Quota project ID used
+    String quotaProjectId = this.languageAutoClient.getSettings().getQuotaProjectId();
+    LOGGER.info("quotaProjectId for Client library: " + quotaProjectId);
+
+    // Transport used
+    String transportName = this.languageAutoClient.getSettings().getTransportChannelProvider().getTransportName();
+    LOGGER.info("transport for Client library: " + transportName);
+
+    // Number of executor threads used
+    int executorThreadCount =
+            ((InstantiatingExecutorProvider) this.languageAutoClient.getSettings().getBackgroundExecutorProvider())
+                    .getExecutorThreadCount();
+    LOGGER.info("number of executor threads for Client library: " + executorThreadCount);
+
+    // Retry settings for methods
+    String analyzeSentimentInitialRetryDelay =
+            this.languageAutoClient.getSettings().analyzeSentimentSettings()
+                    .getRetrySettings().getInitialRetryDelay().toString();
+    LOGGER.info("Initial retry delay for analyzeSentiment: " + analyzeSentimentInitialRetryDelay);
+
+    String analyzeEntitiesInitialRetryDelay =
+            this.languageAutoClient.getSettings().analyzeEntitiesSettings()
+                    .getRetrySettings().getInitialRetryDelay().toString();
+    LOGGER.info("Initial retry delay for analyzeEntities: " + analyzeEntitiesInitialRetryDelay);
+
+    // API Calls
     for (String text : this.texts) {
       Document doc = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
       // Detects the sentiment of the text
@@ -163,6 +111,18 @@ public class SpringAutoconfTestApplication {
     }
   }
 
+  @GetMapping("/functions")
+  public void syncListFunctions() throws Exception {
+    String quotaProjectId = this.functionsAutoClient.getSettings().getQuotaProjectId();
+    LOGGER.info("quotaProjectId set for Client library: " + quotaProjectId);
+    logCredentialId(this.functionsAutoClient.getSettings().getCredentialsProvider().getCredentials());
+    // in pantheon, enable service and create a function. then proceed
+    FunctionName name = FunctionName.of(project, "us-central1", functionName);
+    Function response = functionsAutoClient.getFunction(name);
+
+    LOGGER.info("Function name got: " + response.getName());
+    LOGGER.info("Function BuildConfig Runtime: " + response.getBuildConfig().getRuntime());
+  }
 
   private void logCredentialId(Credentials credentials) {
 
