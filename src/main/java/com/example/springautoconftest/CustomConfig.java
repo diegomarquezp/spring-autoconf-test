@@ -21,7 +21,7 @@ public class CustomConfig {
 //                InstantiatingHttpJsonChannelProvider.newBuilder().build();
 //        return customTransportChannelProvider;
 //      }
-
+//
 //    @Bean
 //    public LanguageServiceSettings customLanguageServiceSettings() throws IOException {
 //        LanguageServiceSettings customLanguageServiceSettings =
@@ -33,7 +33,6 @@ public class CustomConfig {
 //                                return GoogleCredentials.getApplicationDefault();
 //                            }
 //                        })
-////                        .setTransportChannelProvider(InstantiatingHttpJsonChannelProvider.newBuilder().build())
 //                        .build();
 //        return customLanguageServiceSettings;
 //    }

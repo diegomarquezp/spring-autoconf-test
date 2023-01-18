@@ -56,8 +56,6 @@ but this might be also helpful with [testing retry settings](#testing-retry-sett
 3. re-run application
 4. call `curl http://localhost:8080/language` log prints `: transport for Client library: httpjson`
 
-- Override with custom `TransportProvider` bean
-
 ### Testing quota project ID
 1. call `curl http://localhost:8080/language` log prints `: quotaProjectId set for Client library: null`
 2. set `com.google.cloud.language.v1.language-service.quota-project-id` in `application.properties`
@@ -68,7 +66,7 @@ but this might be also helpful with [testing retry settings](#testing-retry-sett
 1. call `curl http://localhost:8080/language` log prints `: number of executor threads for Client library: 10`
 2. set `com.google.cloud.language.v1.language-service.executor-thread-count` in `application.properties`
 3. re-run application
-4. call `curl http://localhost:8080/language` log prints `: number of executor threads for Client library: [custom-balue-from-step2]`
+4. call `curl http://localhost:8080/language` log prints `: number of executor threads for Client library: [custom-value-from-step2]`
 
 ### Testing retry settings
 1. call `curl http://localhost:8080/language` log prints 
@@ -84,6 +82,21 @@ but this might be also helpful with [testing retry settings](#testing-retry-sett
 : Total timeout for analyzeSentiment: [custom-value-from-step2]
 : Total timeout for analyzeEntities: [custom-value-from-step3]
 ```
+
+### Testing custom bean overrides
+
+The autoconfigurations also allow users to override service-specific  
+`TransportProvider` beans, or entire `<Service>Setttings` beans. 
+The [CustomConfig](src/main/java/com/example/springautoconftest/CustomConfig.java) class contains
+an example of this:
+
+1. uncomment the `defaultLanguageServiceTransportChannelProvider` bean and run the application. 
+2. call `curl http://localhost:8080/language` log prints `: transport for Client library: httpjson`
+
+3. uncomment the `customLanguageServiceSettings` bean 
+4. replace the quota project id (feel free to also change/set anything else here), and re-run the application
+5. the logs should show that any configurations here taking precedence over 
+values defined by the `TransportChannelProvider` bean, or any other properties configured.
 
 ## Testing with another client
 
