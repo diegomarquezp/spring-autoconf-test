@@ -12,10 +12,8 @@ import com.google.cloud.language.v1.Document.Type;
 import com.google.cloud.language.v1.Entity;
 import com.google.cloud.language.v1.LanguageServiceClient;
 import com.google.cloud.language.v1.Sentiment;
-import com.google.cloud.spring.core.DefaultCredentialsProvider;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +34,11 @@ public class SpringAutoconfTestApplication {
   @Autowired
   private FunctionServiceClient functionsAutoClient;
 
-  @Value( "${function-project}" )
-  private String project;
-
-  @Value("${function-name}")
-  private String functionName;
+//  @Value( "${function-project}" )
+//  private String project;
+//
+//  @Value("${function-name}")
+//  private String functionName;
 
   private static final Log LOGGER = LogFactory.getLog(SpringAutoconfTestApplication.class);
 
@@ -81,15 +79,15 @@ public class SpringAutoconfTestApplication {
     LOGGER.info("number of executor threads for Client library: " + executorThreadCount);
 
     // Retry settings for methods
-    String analyzeSentimentInitialRetryDelay =
-            this.languageAutoClient.getSettings().analyzeSentimentSettings()
-                    .getRetrySettings().getInitialRetryDelay().toString();
-    LOGGER.info("Initial retry delay for analyzeSentiment: " + analyzeSentimentInitialRetryDelay);
-
-    String analyzeEntitiesInitialRetryDelay =
+    String analyzeEntitiesTotalTimeout =
             this.languageAutoClient.getSettings().analyzeEntitiesSettings()
-                    .getRetrySettings().getInitialRetryDelay().toString();
-    LOGGER.info("Initial retry delay for analyzeEntities: " + analyzeEntitiesInitialRetryDelay);
+                    .getRetrySettings().getTotalTimeout().toString();
+    LOGGER.info("Total timeout for analyzeEntities: " + analyzeEntitiesTotalTimeout);
+
+    String analyzeSentimentTotalTimeout =
+            this.languageAutoClient.getSettings().analyzeSentimentSettings()
+                    .getRetrySettings().getTotalTimeout().toString();
+    LOGGER.info("Total timeout for analyzeSentiment: " + analyzeSentimentTotalTimeout);
 
     // API Calls
     for (String text : this.texts) {
@@ -111,18 +109,18 @@ public class SpringAutoconfTestApplication {
     }
   }
 
-  @GetMapping("/functions")
-  public void syncListFunctions() throws Exception {
-    String quotaProjectId = this.functionsAutoClient.getSettings().getQuotaProjectId();
-    LOGGER.info("quotaProjectId set for Client library: " + quotaProjectId);
-    logCredentialId(this.functionsAutoClient.getSettings().getCredentialsProvider().getCredentials());
-    // in pantheon, enable service and create a function. then proceed
-    FunctionName name = FunctionName.of(project, "us-central1", functionName);
-    Function response = functionsAutoClient.getFunction(name);
-
-    LOGGER.info("Function name got: " + response.getName());
-    LOGGER.info("Function BuildConfig Runtime: " + response.getBuildConfig().getRuntime());
-  }
+//  @GetMapping("/functions")
+//  public void syncListFunctions() throws Exception {
+//    String quotaProjectId = this.functionsAutoClient.getSettings().getQuotaProjectId();
+//    LOGGER.info("quotaProjectId set for Client library: " + quotaProjectId);
+//    logCredentialId(this.functionsAutoClient.getSettings().getCredentialsProvider().getCredentials());
+//    // in pantheon, enable service and create a function. then proceed
+//    FunctionName name = FunctionName.of(project, "us-central1", functionName);
+//    Function response = functionsAutoClient.getFunction(name);
+//
+//    LOGGER.info("Function name got: " + response.getName());
+//    LOGGER.info("Function BuildConfig Runtime: " + response.getBuildConfig().getRuntime());
+//  }
 
   private void logCredentialId(Credentials credentials) {
 
