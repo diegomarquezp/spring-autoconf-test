@@ -3,9 +3,9 @@
 ## Setup
 1. Configure Application Default Credentials through the [Google Cloud SDK](https://cloud.google.com/sdk)
 using `gcloud auth application-default login`.  
-2. Alternatively, you can export a service account key and configure the key location through 
+2. Alternatively, you can export a json key and configure the key location through 
 the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or specific properties
-(see [Testing Credentials](#testing-credentials) section)  
+(see [Testing Credentials](#testing-credentials) section).  
 
 3. Clone this repo, and run test application from root directory:
 ```
@@ -21,23 +21,33 @@ Example with [Google Cloud Natural Language](https://github.com/googleapis/googl
 
 ### Testing credentials
 
-In `application.properties`:
-```
-spring.cloud.gcp.credentials.location=file:/usr/local/key.json
-com.google.cloud.language.v1.language-service.credentials.location=file:/usr/local/key.json
-```
-
-1. In a terminal, call `curl http://localhost:8080/language` and observe output.
-   shows similar to:
+1. In a terminal, call `curl http://localhost:8080/language` and observe output. 
+2. This should auto-detect your credentials from ADC and log something similar to:
 ```
  c.e.s.SpringAutoconfTestApplication      : Default credentials provider for user xxxxxx.apps.googleusercontent.com
  c.e.s.SpringAutoconfTestApplication      : user credential ProjectId: [your-default-application-credentials-project-id]
 ```
 
-2. uncomment/set `spring.cloud.gcp.credentials.location` in `application.properties`
-3. call `curl http://localhost:8080/language` again, this time log should print out the service account in use:
-   `c.e.s.SpringAutoconfTestApplication      : Default credentials provider for service account xxxxx@xxxx.iam.gserviceaccount.com`
-4. test for a combination of global/service level credentials
+3. You can override this with specific credentials (e.g. for a service account) in `application.properties`:
+```
+# Specifies application-level credentials
+spring.cloud.gcp.credentials.location=file:/usr/local/key.json
+
+# Specifies service-level credentials
+com.google.cloud.language.v1.language-service.credentials.location=file:/usr/local/key.json
+```
+
+You can also use a [mock json key](https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/main/spring-cloud-previews/google-cloud-language-spring-starter/src/test/resources/fake-credential-key.json)
+for testing overrides and combinations of service and application-level properties here, 
+and observe logging output for the expected credentials configured. Any subsequent calls to the API that require authentication will fail with the mock key, 
+but this might be also helpful with [testing retry settings](#testing-retry-settings) below. For example:
+
+- Set `spring.cloud.gcp.credentials.location` in `application.properties` to the mock key location 
+- Call `curl http://localhost:8080/language` again, this time log should print out the service account in use:
+   `c.e.s.SpringAutoconfTestApplication      : Default credentials provider for service account xxxxx@xxxx.iam.gserviceaccount.com`  
+- The API call to `analyzeSentiment` will return an error on timeout with message `UNAVAILABLE: Credentials failed to obtain metadata`. 
+  This will only occur after the (default) 10 minutes timeout, but setting 
+  `com.google.cloud.language.v1.language-service.analyze-sentiment-retry.total-timeout` to a shorter duration allows this to happen sooner. 
 
 ### Testing transport channel
 (For libraries that support both gRPC and REST transport)
@@ -63,16 +73,16 @@ com.google.cloud.language.v1.language-service.credentials.location=file:/usr/loc
 ### Testing retry settings
 1. call `curl http://localhost:8080/language` log prints 
 ``` 
-: Initial retry delay for analyzeSentiment: PT0.1S
-: Initial retry delay for analyzeEntities: PT0.1S
+: Total timeout for analyzeSentiment: PT10M
+: Total timeout for analyzeEntities: PT10M
 ```
-2. set `com.google.cloud.language.v1.language-service.retry,initial-retry-delay` in `application.properties`
-3. set `com.google.cloud.language.v1.language-service.analyze-sentiment-retry.initial-retry-delay` in `application.properties`
+2. set `com.google.cloud.language.v1.language-service.retry.total-timeout` in `application.properties`
+3. set `com.google.cloud.language.v1.language-service.analyze-sentiment-retry.total-timeout` in `application.properties`
 4. re-run application
 5. call `curl http://localhost:8080/language` log prints
 ``` 
-: Initial retry delay for analyzeSentiment: [custom-value-from-step2]
-: Initial retry delay for analyzeEntities: [custom-value-from-step3]
+: Total timeout for analyzeSentiment: [custom-value-from-step2]
+: Total timeout for analyzeEntities: [custom-value-from-step3]
 ```
 
 ## Testing with another client
