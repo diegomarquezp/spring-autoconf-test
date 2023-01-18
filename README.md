@@ -37,7 +37,7 @@ spring.cloud.gcp.credentials.location=file:/usr/local/key.json
 com.google.cloud.language.v1.language-service.credentials.location=file:/usr/local/key.json
 ```
 
-You can also use a [mock json key](https://github.com/GoogleCloudPlatform/spring-cloud-gcp/blob/main/spring-cloud-previews/google-cloud-language-spring-starter/src/test/resources/fake-credential-key.json)
+You can also use a [mock json key](/src/test/resources/fake-credential-key.json)
 for testing overrides and combinations of service and application-level properties here, 
 and observe logging output for the expected credentials configured. Any subsequent calls to the API that require authentication will fail with the mock key, 
 but this might be also helpful with [testing retry settings](#testing-retry-settings) below. For example:
