@@ -111,7 +111,7 @@ Example with [Google Cloud Functions](https://github.com/googleapis/google-cloud
   <dependency>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-functions-spring-starter</artifactId>
-    <version>3.4.1-SNAPSHOT-preview</version>
+    <version>4.0.0-SNAPSHOT-preview</version>
   </dependency>
 ```
 
