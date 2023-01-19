@@ -34,11 +34,14 @@ public class SpringAutoconfTestApplication {
   @Autowired
   private FunctionServiceClient functionsAutoClient;
 
-//  @Value( "${function-project}" )
-//  private String project;
-//
-//  @Value("${function-name}")
-//  private String functionName;
+  @Value( "${function-project}" )
+  private String functionProject;
+
+  @Value("${function-location}")
+  private String functionLocation;
+
+  @Value("${function-name}")
+  private String functionName;
 
   private static final Log LOGGER = LogFactory.getLog(SpringAutoconfTestApplication.class);
 
@@ -109,18 +112,27 @@ public class SpringAutoconfTestApplication {
     }
   }
 
-//  @GetMapping("/functions")
-//  public void syncListFunctions() throws Exception {
-//    String quotaProjectId = this.functionsAutoClient.getSettings().getQuotaProjectId();
-//    LOGGER.info("quotaProjectId set for Client library: " + quotaProjectId);
-//    logCredentialId(this.functionsAutoClient.getSettings().getCredentialsProvider().getCredentials());
-//    // in pantheon, enable service and create a function. then proceed
-//    FunctionName name = FunctionName.of(project, "us-central1", functionName);
-//    Function response = functionsAutoClient.getFunction(name);
-//
-//    LOGGER.info("Function name got: " + response.getName());
-//    LOGGER.info("Function BuildConfig Runtime: " + response.getBuildConfig().getRuntime());
-//  }
+  @GetMapping("/functions")
+  public void syncListFunctions() throws Exception {
+
+    // Credentials used
+    logCredentialId(this.functionsAutoClient.getSettings().getCredentialsProvider().getCredentials());
+
+    // Quota project ID used
+    String quotaProjectId = this.functionsAutoClient.getSettings().getQuotaProjectId();
+    LOGGER.info("quotaProjectId set for Client library: " + quotaProjectId);
+
+    // Transport used
+    String transportName = this.functionsAutoClient.getSettings().getTransportChannelProvider().getTransportName();
+    LOGGER.info("transport for Client library: " + transportName);
+
+    // Prerequisite: Enable service and create a function
+    FunctionName name = FunctionName.of(functionProject, functionLocation, functionName);
+    Function response = functionsAutoClient.getFunction(name);
+
+    LOGGER.info("Function name got: " + response.getName());
+    LOGGER.info("Function BuildConfig Runtime: " + response.getBuildConfig().getRuntime());
+  }
 
   private void logCredentialId(Credentials credentials) {
 
