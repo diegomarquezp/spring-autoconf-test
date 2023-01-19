@@ -104,7 +104,7 @@ Example with [Google Cloud Functions](https://github.com/googleapis/google-cloud
 
 - Enable the service API through Google Cloud console or
 `gcloud services enable cloudfunctions.googleapis.com`
-- Create any resources that may be required to test out the service. In this example, create a function with name `test-function-1`. 
+- Create any resources that may be required to test out the service. In this example, create a function with name `function-1` and location `us-central1`. 
 
 - Add the corresponding starter dependency to `pom.xml`
 ```
